@@ -70,6 +70,7 @@ function generateExtraMembers(state) {
 
     //set object count
     state.objectCount = idcount;
+	
 
     //calculate blank mask template
     var layerCount = state.collisionLayers.length;
@@ -514,10 +515,12 @@ function levelFromString(state,level) {
 			}
 
 			var maskint = new BitVec(STRIDE_OBJ);
+			var tmaskint = new BitVec(STRIDE_OBJ);
 			mask = mask.concat([]);					
 			for (var z = 0; z < o.layerCount; z++) {
 				if (mask[z]>=0) {
 					maskint.ibitset(mask[z]);
+					tmaskint.ibitset(3);
 				}
 			}
 			for (var w = 0; w < STRIDE_OBJ; ++w) {
@@ -535,6 +538,7 @@ function levelFromString(state,level) {
 			o.setCell(i, cell);
 		}
 	}
+	
 	return o;
 }
 //also assigns glyphDict
@@ -675,7 +679,7 @@ var simpleRelativeDirections = ['^', 'v', '<', '>'];
 var reg_directions_only = /^(\>|\<|\^|v|up|down|left|right|moving|stationary|no|randomdir|random|horizontal|vertical|orthogonal|perpendicular|parallel|action)$/i;
 //redeclaring here, i don't know why
 var commandwords = ["sfx0","sfx1","sfx2","sfx3","sfx4","sfx5","sfx6","sfx7","sfx8","sfx9","sfx10","cancel","checkpoint","restart","win","message","again","undo",
-  "nosave","quit","zoomscreen","flickscreen","smoothscreen","again_interval","realtime_interval","key_repeat_interval",'noundo','norestart','background_color','text_color','goto'];
+  "nosave","quit","zoomscreen","flickscreen","smoothscreen","again_interval","realtime_interval","key_repeat_interval",'noundo','norestart','background_color','text_color','goto','tween_length'];
 function directionalRule(rule) {
     for (var i = 0; i < rule.lhs.length; i++) {
         var cellRow = rule.lhs[i];
@@ -2271,6 +2275,7 @@ function generateMasks(state) {
     objectMask["\nall\n"] = all_obj;
 
     state.objectMasks = objectMask;
+
 }
 
 function checkObjectsAreLayered(state) {

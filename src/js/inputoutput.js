@@ -240,7 +240,7 @@ function levelEditorClick(event,click) {
 			printLevel();
 		} else if (mouseCoordX>=0&&newindex<glyphImages.length) {
 			glyphSelectedIndex=newindex;
-			redraw();
+			// redraw(); //
 		}
 
 	} else if (mouseCoordX>-1&&mouseCoordY>-1&&mouseCoordX<screenwidth-2&&mouseCoordY<screenheight-2-editorRowCount	) {
@@ -272,7 +272,7 @@ function levelEditorClick(event,click) {
         		backups.push(backupLevel());
 			}
 			level.setCell(coordIndex, glyphmask);
-			redraw();
+			// redraw(); //
 		}
 	}
 	else if (click) {
@@ -298,14 +298,14 @@ function levelEditorRightClick(event,click) {
 	if (mouseCoordY===-2) {
 		if (mouseCoordX<=glyphImages.length) {
 			glyphSelectedIndex=mouseCoordX;
-			redraw();
+			// redraw(); //
 		}
 	} else if (mouseCoordX>-1&&mouseCoordY>-1&&mouseCoordX<screenwidth-2&&mouseCoordY<screenheight-2-editorRowCount	) {
 		var coordIndex = mouseCoordY + mouseCoordX*level.height;
 		var glyphmask = new BitVec(STRIDE_OBJ);
 		glyphmask.ibitset(state.backgroundid);
 		level.setCell(coordIndex, glyphmask);
-		redraw();
+		// redraw(); //
 	}
 	else if (click) {
 		if (mouseCoordX===-1) {
@@ -595,7 +595,7 @@ function mouseAction(event,click,id) {
 						var inputdir = 5;
 						pushInput(inputdir);
 						if (processInput(inputdir,false,false,bak)) {
-							redraw();
+							// redraw(); //
 						}
 					} catch(e) {
 						console.log(e);
@@ -618,7 +618,7 @@ function mouseAction(event,click,id) {
 					var inputdir = 5;
 					pushInput(inputdir);
 					if (processInput(inputdir,false,false,bak)) {
-						redraw();
+						// redraw(); //
 					}
 				} catch(e) {
 					console.log(e);
@@ -880,15 +880,15 @@ function mouseMove(event) {
     	} else if (rightdragging){
     		levelEditorRightClick(event,false);
     	}
-	    redraw();
+	    // redraw(); //
     } else if (dragging && "mouse_drag" in state.metadata) {
     	setMouseCoord(event);
     	mouseAction(event,false,state.dragID);
-	    redraw();
+	    // redraw(); //
 	} else if (rightdragging && "mouse_rdrag" in state.metadata) {
     	setMouseCoord(event);
 		mouseAction(event,false,state.rdragID);
-	    redraw();
+	    // redraw(); //
 	}
 
 	event.handled=true;
@@ -933,12 +933,12 @@ function onMouseWheel(event) {
 	if (titleScreen && titleMode == 2 && (state.metadata.mouse_left || state.metadata.mouse_drag)) {
 		levelSelectScroll(normalizedDelta);
 
-		redraw();
+		// redraw(); //
 		prevent(event)
 	}
 	if (levelEditorOpened) {
 		glyphSelectedIndex = clamp(glyphSelectedIndex + normalizedDelta, 0, glyphCount() - 1);
-		redraw();
+		// redraw(); //
 		prevent(event)
 	}
 }
@@ -1312,7 +1312,7 @@ function checkKey(e,justPressed) {
 						} else if(titleMode == 2) {
 							generateLevelSelectScreen();
 						}
-	    				redraw();
+	    				// redraw(); //
 	    			}
     			}
     			else if (inputdir===0||inputdir===2) {
@@ -1333,7 +1333,7 @@ function checkKey(e,justPressed) {
 					} else if(titleMode == 2) {
 						generateLevelSelectScreen();
 					}
-    				redraw();
+    				// redraw(); //
     			}
     		}
     	} else {
@@ -1358,7 +1358,7 @@ function checkKey(e,justPressed) {
             } else {
                 pushInput(inputdir);
                 if (processInput(inputdir)) {
-                    redraw();
+                    // redraw(); //
                 }
 	        }
 	       	return prevent(e);
@@ -1371,6 +1371,9 @@ function update() {
     var draw = false;
 
     timer+=deltatime;
+	
+	tweentimer = clamp(tweentimer-1, 0, tweentimer_max); // for tween hack
+	
     input_throttle_timer+=deltatime;
     if (quittingTitleScreen) {
         if (timer/1000>0.3) {
@@ -1443,7 +1446,7 @@ function update() {
 
 	if (draw || (typeof state !== "undefined" && 
 		state.metadata.smoothscreen !== undefined)) {
-      redraw();
+      // redraw(); //
 	}
 }
 
@@ -1452,7 +1455,8 @@ var looping=false;
 var loop = function(){
 	looping=true;
 	try {
-		update();
+		update(); // Update imputs.
+		redraw(); // Draw screen.
 	}
 	catch (e) {
 		//Something went wrong, but it's more important that the loop doesn't crash during errors
@@ -1474,3 +1478,8 @@ document.addEventListener('visibilitychange', function logData() {
   });
 
 loop();
+
+
+
+
+

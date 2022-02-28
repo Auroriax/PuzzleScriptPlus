@@ -257,12 +257,12 @@ editor.on('keyup', function (editor, event) {
 
 function debugPreview(turnIndex,lineNumber){
 	diffToVisualize=debug_visualisation_array[turnIndex][lineNumber];
-	redraw();
+	// redraw(); //
 }
 
 function debugUnpreview(){
 	diffToVisualize=null;
-	redraw();
+	// redraw(); //
 }
 
 function addToDebugTimeline(level,lineNumber){

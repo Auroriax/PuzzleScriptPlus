@@ -25,7 +25,7 @@ function makeGIF() {
 
 	compile(["loadLevel",curlevel],levelString,randomseed);
 	canvasResize();
-	redraw();
+	// redraw(); //
 
 	if (state !== undefined && state.metadata.smoothscreen != null) {
 		consolePrint('<span class="errorText">GIF recorder does not work with smoothscreen, sorry. :( You could try an external GIF recording application instead.</span>');
@@ -49,7 +49,7 @@ function makeGIF() {
 		} else {
 			processInput(val);
 		}
-		redraw();
+		// redraw(); //
 		gifctx.drawImage(canvas,-xoffset,-yoffset);
 		encoder.addFrame(gifctx);
 		encoder.setDelay(realtimeframe?autotickinterval:repeatinterval);
@@ -57,7 +57,7 @@ function makeGIF() {
 
 		while (againing) {
 			processInput(-1);		
-			redraw();
+			// redraw(); //
 			encoder.setDelay(againinterval);
 			gifctx.drawImage(canvas,-xoffset,-yoffset);
 	  		encoder.addFrame(gifctx);	

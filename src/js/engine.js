@@ -1,4 +1,7 @@
 
+var tweentimer = 0;
+var tweentimer_max = 12;
+
 var RandomGen = new RNG();
 
 var intro_template = [
@@ -132,7 +135,7 @@ function unloadGame() {
 	level.objects = new Int32Array(0);
 	generateTitleScreen();
 	canvasResize();
-	redraw();
+	// redraw(); //
 	titleSelected=true;
 }
 
@@ -332,7 +335,7 @@ function gotoLevelSelectScreen() {
   twiddleMetadataExtras();
 
 	generateLevelSelectScreen();
-	redraw();
+	// redraw(); //
 }
 
 function generateLevelSelectScreen() {
@@ -459,7 +462,7 @@ function generateLevelSelectScreen() {
 	}
 
 	regenSpriteImages();
-	redraw();
+	// redraw(); //
 }
 
 function gotoLevel(sectionIndex) {
@@ -469,7 +472,7 @@ function gotoLevel(sectionIndex) {
 
   if (sectionIndex < 0) {return;} //Invalid index
 
-  console.log(sectionIndex);
+	console.log(sectionIndex);
 
 	againing = false;
 	messagetext = "";
@@ -630,7 +633,8 @@ function drawMessageScreen() {
 
 var loadedLevelSeed=0;
 
-function loadLevelFromLevelDat(state,leveldat,randomseed,clearinputhistory) {	
+function loadLevelFromLevelDat(state,leveldat,randomseed,clearinputhistory) {
+	
 	if (randomseed==null) {
 		randomseed = (Math.random() + Date.now()).toString();
 	}
@@ -661,11 +665,10 @@ function loadLevelFromLevelDat(state,leveldat,randomseed,clearinputhistory) {
       //tryPlayGotoSound();
       setSectionSolved(state.levels[Number(curlevel)].section)
       gotoLevel(leveldat.target);
-    } else {
-      titleMode=0;
-      textMode=false;
-    level = leveldat.clone();
-    RebuildLevelArrays();
+    } else {titleMode=0;
+	  textMode=false;
+		level = leveldat.clone();
+		RebuildLevelArrays();
         if (state!==undefined) {
 	        if (state.metadata.flickscreen!==undefined){
 	            oldflickscreendat=[
@@ -775,7 +778,7 @@ function tryLoadCustomFont() {
 		document.fonts.add(loaded_face);
 		loadedCustomFont = true;
 		canvasResize();
-		redraw();
+		// redraw(); //
 	}).catch(function(error) {alert("Unable to load font!");});
 }
 
@@ -948,6 +951,12 @@ function setGameState(_state, command, randomseed) {
     repeatinterval=state.metadata.key_repeat_interval*1000;
     } else {
       repeatinterval=150;
+    }
+	
+    if (state.metadata.tween_length!==undefined) { // tween
+		tweentimer_max=state.metadata.tween_length*deltatime;
+    } else {
+		tweentimer_max = deltatime*0.5;
     }
 
     if (state.metadata.again_interval!==undefined) {
@@ -1400,6 +1409,7 @@ function moveEntitiesAtIndex(positionIndex, entityMask, dirMask) {
 
 
 function startMovement(dir) {
+
   var movedany=false;
     var playerPositions = getPlayerPositions();
     for (var i=0;i<playerPositions.length;i++) {
@@ -1477,6 +1487,16 @@ function repositionEntitiesOnLayer(positionIndex,layer,dirMask)
     level.setCell(positionIndex, sourceMask);
     level.setCell(targetIndex, targetMask);
 	
+	
+	// TWEEN HACKING //
+	for (let i = 1; i < level.tweens[targetIndex].length; i++) {
+		if (movingEntities.get(i) != 0) {
+			level.tweens[targetIndex][i] = dirMasksDelta[dirMask]
+		}
+	}
+	tweentimer = tweentimer_max; // just reset the timer
+	///////////////////
+	
     var colIndex=(targetIndex/level.height)|0;
 	var rowIndex=(targetIndex%level.height);
 	
@@ -1505,7 +1525,7 @@ function repositionEntitiesAtCell(positionIndex) {
     }
 
     level.setMovements(positionIndex, movementMask);
-
+	
     return moved;
 }
 
@@ -1520,6 +1540,10 @@ function Level(lineNumber, width, height, layerCount, objects, section) {
 	this.layerCount = layerCount;
 	this.commandQueue = [];
 	this.commandQueueSourceRules = [];
+	
+	//tween hack stuff
+	this.tweens = [];
+	//
 }
 
 Level.prototype.delta_index = function(direction)
@@ -1550,6 +1574,7 @@ Level.prototype.setCell = function(index, vec) {
     this.objects[index * STRIDE_OBJ + i] = vec.data[i];
   }
 }
+
 
 var _movementVecs;
 var _movementVecIndex=0;
@@ -2593,6 +2618,12 @@ function twiddleMetadataExtras() {
     againinterval=150;
   }
 
+    if (state.metadata.tween_length!==undefined) { // tween
+		tweentimer_max=state.metadata.tween_length*deltatime;
+    } else {
+		tweentimer_max = deltatime*0.5;
+    }
+	
   if (state.metadata.key_repeat_interval!==undefined) {
     repeatinterval=state.metadata.key_repeat_interval*1000;
   } else {
@@ -2773,7 +2804,15 @@ function applyRules(rules, loopPoint, startRuleGroupindex, bannedGroup){
 
 //if this returns!=null, need to go back and reprocess
 function resolveMovements(level, bannedGroup){
+	
     var moved=true;
+	///tweenstuff
+	if (level.tweens.length != level.n_tiles){
+		level.tweens = new Array(level.n_tiles).fill(new Array(256).fill([0,0]));
+	} else {
+		level.tweens = [...Array(level.n_tiles)].map(e => Array(256).fill([0,0]));
+	}
+	
     while(moved){
         moved=false;
         for (var i=0;i<level.n_tiles;i++) {
@@ -2825,6 +2864,8 @@ function resolveMovements(level, bannedGroup){
 	    level.rigidGroupIndexMask[i]=0;
 	    level.rigidMovementAppliedMask[i]=0;
     }
+	
+	
     return doUndo;
 }
 
@@ -2874,6 +2915,7 @@ var playerPositionsAtTurnStart;
 /* returns a bool indicating if anything changed */
 function processInput(dir,dontDoWin,dontModify,bak) {
 var startDir = dir;
+
 
 	againing = false;
 
@@ -3619,6 +3661,7 @@ function updateCameraPositionTarget() {
 
         var playerVector = playerPosition[coord] - cameraPositionTarget[coord];
         var direction = Math.sign(playerVector);
+		
         var boundaryVector = direction > 0
           ? Math.ceil(boundaryDimension / 2)
           : -(Math.floor(boundaryDimension / 2) + 1);
