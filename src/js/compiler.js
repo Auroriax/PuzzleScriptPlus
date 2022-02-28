@@ -70,7 +70,6 @@ function generateExtraMembers(state) {
 
     //set object count
     state.objectCount = idcount;
-	
 
     //calculate blank mask template
     var layerCount = state.collisionLayers.length;
@@ -515,12 +514,10 @@ function levelFromString(state,level) {
 			}
 
 			var maskint = new BitVec(STRIDE_OBJ);
-			var tmaskint = new BitVec(STRIDE_OBJ);
 			mask = mask.concat([]);					
 			for (var z = 0; z < o.layerCount; z++) {
 				if (mask[z]>=0) {
 					maskint.ibitset(mask[z]);
-					tmaskint.ibitset(3);
 				}
 			}
 			for (var w = 0; w < STRIDE_OBJ; ++w) {
@@ -538,7 +535,6 @@ function levelFromString(state,level) {
 			o.setCell(i, cell);
 		}
 	}
-	
 	return o;
 }
 //also assigns glyphDict
@@ -2275,7 +2271,6 @@ function generateMasks(state) {
     objectMask["\nall\n"] = all_obj;
 
     state.objectMasks = objectMask;
-
 }
 
 function checkObjectsAreLayered(state) {
