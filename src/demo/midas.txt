@@ -10,7 +10,7 @@ https://web.archive.org/web/20120219201941/http://wanderlands.org/main/midas
 update: uh, it's flash, so not a playable link any more...
 
 )
-
+tween_length 0.8 (feels a tad nicer)
 ========
 OBJECTS
 ========
@@ -144,7 +144,9 @@ HORIZONTAL [ > PlayerJump1 | NO obstacle ] -> [ | PlayerGround ]
 HORIZONTAL [ > PlayerJump2 | NO obstacle ] -> [ | PlayerJump1 ]
 LATE DOWN [ PlayerGround | NO obstacle ] -> [ | playerground ]
 
+[> Player crown| ] -> [> Player > crown| ] (tween fix)
 LATE [ crown no player ] [ player ] -> [ ] [ crown player ]
+
 LATE [ goldingblock ] -> [goldblock]
 LATE [ crown | wall ] -> [crown | goldingblock] SFX1
 LATE [ crown | water ] -> [ | water ] SFX0

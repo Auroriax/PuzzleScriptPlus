@@ -47,9 +47,9 @@ Player
 ======
 RULES
 ======
-
-[ > Player | No Trail ] -> [ Trail | Player ] sfx0
-[ > Player | Trail ] -> [  | Player ] sfx1
+ (recoded for tweening, should be the same gameplay wise)
+[ > Player | No Trail ] -> [ > Player Trail |  ] sfx0
+[ > Player | Trail ] -> [ > Player | ] sfx1
 
 ==============
 WINCONDITIONS

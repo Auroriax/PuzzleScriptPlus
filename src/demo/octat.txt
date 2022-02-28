@@ -83,13 +83,16 @@ RULES
 ======
 
 [ > player | no activetile ] -> cancel
-[ > player |  ] -> [ | player ]
 
-[ activetile | player ] -> [ temp | player ]
-[ no temp | player ] -> [activetile | player ]
-[ temp ] -> []
 
-[activetile void ] -> [ void ]
+(removed some code and put the rest on Late for tweening to work)
+
+([ > player |  ] -> [ | player ])
+late [ activetile | player ] -> [ temp | player ]
+late [ no temp | player ] -> [activetile | player ]
+late [ temp ] -> []
+
+late [activetile void ] -> [ void ]
 
 ==============
 WINCONDITIONS

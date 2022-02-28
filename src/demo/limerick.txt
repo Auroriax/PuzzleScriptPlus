@@ -52,6 +52,9 @@ Green
 00.00
 .000.
 
+PlayerBodyCol
+transparent
+
 
 Crate
 Orange
@@ -105,7 +108,7 @@ LEGEND
 =======
 
 Player = PlayerHead1 or PlayerHead2 or PlayerHead3 or PlayerHead4
-Obstacle = PlayerBodyH or PlayerBodyV or Wall or Crate or Player
+Obstacle = PlayerBodyH or PlayerBodyV or Wall or Crate or Player or PlayerBodyCol
 PlayerBody = PlayerBodyH or PlayerBodyV
 . = Background
 P = PlayerHead1
@@ -130,28 +133,30 @@ COLLISIONLAYERS
 Background
 Exit, Apple
 PlayerBody
-Player, Wall, Crate
+Player, Wall, Crate, PlayerBodyCol
 
 
 ======
 RULES
 ======
+(Partly rewritten for Tween engine)
 
 (this game handles all the movement stuff itself - it removes all movements before the movement phase has a chance to tick at all)
 
-UP [ UP PlayerHead4 ] -> [ PlayerHead4 ]
-UP [ UP PlayerHead3 | No Obstacle ] -> [ PlayerBodyV | PlayerHead4 ] sfx1
-UP [ UP PlayerHead2 | No Obstacle ] -> [ PlayerBodyV | PlayerHead3 ] sfx0
-UP [ UP PlayerHead1 | No Obstacle ] -> [ PlayerBodyV | PlayerHead2 ] sfx0
+[PlayerBody] -> [PlayerBody PlayerBodyCol]
 
-Horizontal [ > Player | Crate | No Obstacle ] -> [ PlayerBodyH | PlayerHead1 | Crate ] sfx2
+UP [ UP PlayerHead4 ] -> [ PlayerHead4 ]
+UP [ UP PlayerHead3 | No Obstacle ] -> [ PlayerBodyV > PlayerHead4| ] sfx1
+UP [ UP PlayerHead2 | No Obstacle ] -> [ PlayerBodyV > PlayerHead3| ] sfx0
+UP [ UP PlayerHead1 | No Obstacle ] -> [ PlayerBodyV > PlayerHead2| ] sfx0
+
+Horizontal [ > Player | Crate | No Obstacle ] -> [ PlayerBodyH > PlayerHead1 |  > Crate | No Obstacle ] sfx2
 
 Horizontal [ > Player | No Obstacle ] -> [ PlayerBodyH  | PlayerHead1 ] sfx2
 
 [ Player Apple ] [ PlayerBody ] -> [ Player Apple ] [ ]
 [ Player Apple ] -> [ Player ]
 
-[ > Player ] -> [ Player ]
 
 DOWN [ Player | No Obstacle ] -> [ PlayerBodyV | PlayerHead1 ]
 DOWN [ Crate | No Obstacle ] -> [  | Crate ]
