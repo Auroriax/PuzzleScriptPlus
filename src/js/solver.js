@@ -67,7 +67,7 @@ async function solve() {
 			// consolePrint("searched: " + size + " queue: " + discovered);
 			// console.log(discovered, size);
 			solvingProgress.innerHTML = "searched: " + size;
-			redraw();
+			// redraw(); //
 			await timeout(1);
 		}
 		var temp = queue.poll();
@@ -157,7 +157,7 @@ async function solve() {
 					winning = false;
 					playSound(13219900);
 
-					redraw();
+					// redraw(); //
 					cancelLink.hidden = true;
 					return;
 				}
@@ -180,7 +180,7 @@ async function solve() {
 	solvingProgress.innerHTML = "";
 	deltatime = oldDT;
 	playSound(52291704);
-	redraw();
+	// redraw(); //
 	cancelLink.hidden = true;
 }
 

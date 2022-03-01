@@ -298,7 +298,7 @@ function redraw() {
     if (spriteimages===undefined) {
         regenSpriteImages();
     }
-
+	
     if (textMode) {
         ctx.fillStyle = state.bgcolor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -424,16 +424,51 @@ function redraw() {
 		screenOffsetX = mini;
 		screenOffsetY = minj;
 
+		// make sure tween map exists
+		if (level.tweens.length == 0){
+			level.tweens = new Array(level.width * level.height).fill(new Array(256).fill([0,0]));
+		}
+		
         var renderBorderSize = smoothscreen ? 1 : 0;
-
-        for (var i = Math.max(mini - renderBorderSize, 0); i < Math.min(maxi + renderBorderSize, curlevel.width); i++) {
-            for (var j = Math.max(minj - renderBorderSize, 0); j < Math.min(maxj + renderBorderSize, curlevel.height); j++) {
-                var posIndex = j + i * curlevel.height;
-                var posMask = curlevel.getCellInto(posIndex,_o12);                
-                for (var k = 0; k < state.objectCount; k++) {
-                    if (posMask.get(k) != 0) {                  
+        for (var k = 0; k < state.objectCount; k++) {
+			for (var i = Math.max(mini - renderBorderSize, 0); i < Math.min(maxi + renderBorderSize, curlevel.width); i++) {
+				for (var j = Math.max(minj - renderBorderSize, 0); j < Math.min(maxj + renderBorderSize, curlevel.height); j++) {
+					var posIndex = j + i * curlevel.height;
+					var posMask = curlevel.getCellInto(posIndex,_o12);
+					
+					var tween_dir = curlevel.tweens[posIndex];
+					//console.log(tween_dir)
+                    if (posMask.get(k) != 0) {
                         var sprite = spriteimages[k];
-                        ctx.drawImage(sprite, Math.floor(xoffset + (i-mini-cameraOffset.x) * cellwidth), Math.floor(yoffset + (j-minj-cameraOffset.y) * cellheight));
+						var x = xoffset + (i-mini-cameraOffset.x) * cellwidth;
+						var y = yoffset + (j-minj-cameraOffset.y) * cellheight;
+						
+						
+						//ctx.drawImage(sprite, Math.round(x), Math.round(y)); // placeholder
+						
+						var dir = tween_dir[k]
+						
+						var tween = tweentimer/tweentimer_max;
+						var shiftx = cellwidth*dir[0]*tween
+						var shifty = cellheight*dir[1]*tween
+						
+						ctx.drawImage(sprite, Math.round(x-shiftx), Math.round(y-shifty));
+						
+						// //debug text
+						// ctx.fillStyle = 'red';
+						// ctx.font = 'bold 24px serif';
+						// ctx.fillText(dir.join("-"), Math.round(x), Math.round(y));
+						
+						// //debug line
+						// x += cellwidth*0.5
+						// y += cellheight*0.5
+						// ctx.strokeStyle = 'red';
+						// ctx.lineWidth = 8;
+						// ctx.beginPath();
+						// ctx.moveTo(Math.round(x), Math.round(y));
+						// ctx.lineTo(Math.round(x-shiftx), Math.round(y-shifty));
+						// ctx.stroke();
+						
                     }
                 }
             }
@@ -450,6 +485,7 @@ function redraw() {
             }
 
             var prev_state = debug_visualisation_array[diffToVisualize.turnIndex][prevstate_lineNumberIndex];
+			
             var prevlevel = new Level(-1,prev_state.width,prev_state.height,prev_state.layerCount,prev_state.objects);
             prevlevel.movements = prev_state.movements;
         
@@ -754,3 +790,7 @@ function canvasResize() {
 
     redraw();
 }
+
+
+
+
