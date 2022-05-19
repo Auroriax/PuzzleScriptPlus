@@ -670,9 +670,9 @@ var directionaggregates = {
 };
 
 var relativeDirections = ['^', 'v', '<', '>', 'perpendicular', 'parallel'];
-var simpleAbsoluteDirections = ['up', 'down', 'left', 'right'];
-var simpleRelativeDirections = ['^', 'v', '<', '>'];
-var reg_directions_only = /^(\>|\<|\^|v|up|down|left|right|moving|stationary|no|randomdir|random|horizontal|vertical|orthogonal|perpendicular|parallel|action)$/i;
+var simpleAbsoluteDirections = ['up', 'down', 'left', 'right', 'anim_left', 'anim_down', 'anim_left', 'anim_right'];
+var simpleRelativeDirections = ['^', 'v', '<', '>', 'anim_towards', 'anim_cw', 'anim_away', 'anim_ccw'];
+var reg_directions_only = /^(\>|\<|\^|v|up|down|left|right|moving|stationary|no|randomdir|random|horizontal|vertical|orthogonal|perpendicular|parallel|action|anim_left|anim_down|anim_left|anim_right|anim_towards|anim_cw|anim_away|anim_ccw)$/i;
 //redeclaring here, i don't know why
 var commandwords = ["sfx0","sfx1","sfx2","sfx3","sfx4","sfx5","sfx6","sfx7","sfx8","sfx9","sfx10","cancel","checkpoint","restart","win","message","again","undo",
   "nosave","quit","zoomscreen","flickscreen","smoothscreen","again_interval","realtime_interval","key_repeat_interval",'noundo','norestart','background_color','text_color','goto','message_text_align'];
@@ -1710,12 +1710,25 @@ var relativeDict = {
     'left': ['down', 'up', 'right', 'left', 'horizontal_par', 'vertical_perp']
 };
 
+var animationRelativeDirs = ["anim_towards", "anim_ccw", "anim_away", "anim_cw"];
+var animationRelativeDict = {
+    'right': ['anim_up', 'anim_down', 'anim_left', 'anim_right'],
+    'up': ['anim_left', 'anim_right', 'anim_down', 'anim_up'],
+    'down': ['anim_right', 'anim_left', 'anim_up', 'anim_down'],
+    'left': ['anim_down', 'up', 'anim_right', 'anim_left']
+}
+
 function absolutifyRuleCell(forward, cell) {
     for (var i = 0; i < cell.length; i += 2) {
         var c = cell[i];
         var index = relativeDirs.indexOf(c);
         if (index >= 0) {
             cell[i] = relativeDict[forward][index];
+        } else {
+            var animIndex = animationRelativeDirs.indexOf(c)
+            if (animIndex >= 0) {
+                cell[i] = animationRelativeDict[forward][animIndex];
+            }
         }
     }
 }
@@ -1738,6 +1751,11 @@ var dirMasks = {
     'randomdir': parseInt('00101', 2),
     'random': parseInt('10010', 2),
     'action': parseInt('10000', 2),
+
+    'anim_left': parseInt('11000', 2), //24
+    'anim_up': parseInt('11001', 2), //25
+    'anim_down': parseInt('11010', 2), //26
+    'anim_right': parseInt('11011', 2), //27
     '': parseInt('00000', 2)
 };
 

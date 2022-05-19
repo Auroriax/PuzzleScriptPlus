@@ -1485,7 +1485,12 @@ var dirMasksDelta = {
      8:[1,0],//'right' : 
      15:[0,0],//'?' : 
      16:[0,0],//'action' : 
-     3:[0,0]//'no'
+	 3:[0,0],//'no'
+
+	 25:[0,0],//up
+     26:[0,0],//'down'  : 
+     24:[0,0],//'left'  : 
+     27:[0,0],//'right' : 
 };
 
 var dirMaskName = {
@@ -1495,7 +1500,12 @@ var dirMaskName = {
      8:'right',  
      15:'?' ,
      16:'action',
-     3:'no'
+	 3:'no',
+	 
+	 25: "anim up",
+	 26: "anim down",
+	 25: "anim left",
+	 27: "anim right"
 };
 
 var seedsToPlay_CanMove=[];
@@ -1510,7 +1520,7 @@ function repositionEntitiesOnLayer(positionIndex,layer,dirMask)
     var tx = ((positionIndex/level.height)|0);
     var ty = ((positionIndex%level.height));
     var maxx = level.width-1;
-    var maxy = level.height-1;
+	var maxy = level.height-1;
 
     if ( (tx===0&&dx<0) || (tx===maxx&&dx>0) || (ty===0&&dy<0) || (ty===maxy&&dy>0)) {
       return false;
@@ -2854,6 +2864,30 @@ function applyRules(rules, loopPoint, startRuleGroupindex, bannedGroup){
     }
 }
 
+function recordAnimations(level) {
+
+	for (var i=0;i<level.n_tiles;i++) {
+		var movementMask = level.getMovements(i);
+		console.log(movementMask);
+		if (movementMask.iszero())
+			return false;
+	
+		var moved=false;
+		for (var layer=0;layer<level.layerCount;layer++) {
+			var layerMovement = movementMask.getshiftor(0x1f, 5*layer);
+			console.log(layerMovement);
+			if (layerMovement!==0) {
+				
+				//var thismoved = repositionEntitiesOnLayer(positionIndex,layer,layerMovement);
+				/*if (thismoved) {
+					movementMask.ishiftclear(layerMovement, 5*layer);
+					moved = true;
+				}*/
+			}
+		}
+
+	}
+}
 
 //if this returns!=null, need to go back and reprocess
 function resolveMovements(level, bannedGroup){
@@ -3058,7 +3092,9 @@ playerPositionsAtTurnStart = getPlayerPositions();
 
 			applyRules(state.rules, state.loopPoint, startRuleGroupIndex, bannedGroup);
 			
-        	var shouldUndo = resolveMovements(level,bannedGroup);
+			console.log(deepClone(level.movements))
+			var shouldUndo = resolveMovements(level,bannedGroup);
+			console.log(deepClone(level.movements))
 
         	if (shouldUndo) {
         		rigidloop=true;
@@ -3120,6 +3156,8 @@ playerPositionsAtTurnStart = getPlayerPositions();
           return false;
         }
 
+		console.log(deepClone(level.movements))
+		recordAnimations(level);
 
         if (playerPositionsAtTurnStart.length>0 && state.metadata.require_player_movement!==undefined && dir >= 0) {
         	var somemoved=false;
