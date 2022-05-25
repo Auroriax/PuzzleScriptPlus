@@ -697,6 +697,8 @@ function loadLevelFromLevelDat(state,leveldat,randomseed,clearinputhistory) {
 	titleMode=showContinueOptionOnTitleScreen()?1:0;
 	titleSelection=0;
   titleSelected=false;
+  dragging = false;
+  rightdragging = false;
   state.metadata = deepClone(state.default_metadata);
     againing=false;
     if (leveldat===undefined) {

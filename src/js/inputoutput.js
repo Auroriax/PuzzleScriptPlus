@@ -667,6 +667,7 @@ function onMouseDown(event) {
         	if (levelEditorOpened && !textMode) {
         		return levelEditorClick(event,true);
         	} else if ("mouse_left" in state.metadata) {
+				prevent(event)
 				return mouseAction(event,true,state.lmbID);		// must break to not execute dragging=false;
 			}
         }
@@ -720,6 +721,7 @@ function onMouseUp(event) {
         if (event.target===canvas) {
         	setMouseCoord(event);
         	if ("mouse_up" in state.metadata) {
+				prevent(event); //Prevent "ghost click" on mobile
 				return mouseAction(event,true,state.lmbupID);
 			}
         }
@@ -914,9 +916,9 @@ function onMouseOut() {
 	//console.log("Cursor moved out of canvas")
 }
 
-document.addEventListener('touchstart', onMouseDown, false);
+document.addEventListener('touchstart', onMouseDown, {passive: false});
 document.addEventListener('touchmove', mouseMove, false);
-document.addEventListener('touchend', onMouseUp, false);
+document.addEventListener('touchend', onMouseUp, {passive: false});
 
 document.addEventListener('mousedown', onMouseDown, false);
 document.addEventListener('mouseup', onMouseUp, false);
@@ -1190,7 +1192,8 @@ function checkKey(e,justPressed) {
         		break;
         	}
         	if (titleScreen===false || titleMode > 1) {
-				if (timer/1000>0.5 || titleMode > 1) {
+				if ((timer/1000>0.5 || titleMode > 1) && !quittingTitleScreen) {
+
 					titleSelection = 0;
 					
 					timer = 0;
