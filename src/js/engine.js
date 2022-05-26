@@ -1558,14 +1558,17 @@ function repositionEntitiesOnLayer(positionIndex,layer,dirMask)
     level.setCell(positionIndex, sourceMask);
 	level.setCell(targetIndex, targetMask);
 
-	if (state.metadata.tween_length) {
+
+	console.log("movingEntities", movingEntities);
+
+	/*if (state.metadata.tween_length) {
 		for (let i = 1; i < state.objectCount; i++) {
 			if (movingEntities.get(i) != 0) {
 				newMovedEntities[targetIndex+"-"+i] = dirMask;
 			}
 		}
 		//console.log(level.movedEntities)
-	}
+	}*/
 	
     var colIndex=(targetIndex/level.height)|0;
 	var rowIndex=(targetIndex%level.height);
@@ -1585,11 +1588,33 @@ function repositionEntitiesAtCell(positionIndex) {
     var moved=false;
     for (var layer=0;layer<level.layerCount;layer++) {
         var layerMovement = movementMask.getshiftor(0x1f, 5*layer);
-        if (layerMovement!==0) {
+        if (layerMovement!==0 && layerMovement <= 16) {
             var thismoved = repositionEntitiesOnLayer(positionIndex,layer,layerMovement);
             if (thismoved) {
-                movementMask.ishiftclear(layerMovement, 5*layer);
 				moved = true;
+				//console.log("movement mask raw: "+layer,movementMask.data[0]);
+				movementMask.ishiftclear(layerMovement, 5*layer);
+				//console.log("shiftclear mask raw: "+layer,movementMask.data[0]);
+
+				if (state.metadata.tween_length) {
+					switch (layerMovement) {
+						case 1:
+							movementMask.ishiftor(24, 5*layer);
+							break;
+						case 2:
+							movementMask.ishiftor(25, 5*layer);
+							break;
+						case 4:
+							movementMask.ishiftor(26, 5*layer);
+							break;
+						case 8:
+							movementMask.ishiftor(27, 5*layer);
+							break;
+						/*case 16:
+							movementMask.ishiftclear() //QQQ*/
+					}
+					//console.log("moved with tween active " + layerMovement,movementMask.data[0])
+				}
             }
         }
     }
@@ -2869,15 +2894,15 @@ function applyRules(rules, loopPoint, startRuleGroupindex, bannedGroup){
 function recordAnimations(level) {
 
 	for (var i=0;i<level.n_tiles;i++) {
-		var movementMask = level.getMovements(i);
+		var movementMask = level.movements[i];
 		console.log(movementMask);
-		if (movementMask.iszero())
+		if (movementMask!== 0)
 			return false;
 	
 		var moved=false;
 		for (var layer=0;layer<level.layerCount;layer++) {
 			var layerMovement = movementMask.getshiftor(0x1f, 5*layer);
-			console.log(layerMovement);
+			console.log("recordAnimation layermovement: "+movementMask, layerMovement);
 			if (layerMovement!==0) {
 				
 				//var thismoved = repositionEntitiesOnLayer(positionIndex,layer,layerMovement);
@@ -2886,6 +2911,8 @@ function recordAnimations(level) {
 					moved = true;
 				}*/
 			}
+
+			level.movements[i] = 0;
 		}
 
 	}
@@ -2940,9 +2967,10 @@ function resolveMovements(level, bannedGroup){
 			}
     	}
 
-    	for (var j=0;j<STRIDE_MOV;j++) {
+    	/*for (var j=0;j<STRIDE_MOV;j++) {
+			console.log(j+i*STRIDE_MOV)
     		level.movements[j+i*STRIDE_MOV]=0;
-    	}
+    	}*/
 	    level.rigidGroupIndexMask[i]=0;
 	    level.rigidMovementAppliedMask[i]=0;
     }
@@ -3089,14 +3117,13 @@ playerPositionsAtTurnStart = getPlayerPositions();
         //after each iteration
         	rigidloop=false;
         	i++;
-        	
-
 
 			applyRules(state.rules, state.loopPoint, startRuleGroupIndex, bannedGroup);
 			
-			console.log(deepClone(level.movements))
+			console.log("pre-resolve: ",deepClone(level.movements))
 			var shouldUndo = resolveMovements(level,bannedGroup);
-			console.log(deepClone(level.movements))
+
+			console.log("post-resolve: ", deepClone(level.movements))
 
         	if (shouldUndo) {
         		rigidloop=true;
@@ -3158,7 +3185,7 @@ playerPositionsAtTurnStart = getPlayerPositions();
           return false;
         }
 
-		console.log(deepClone(level.movements))
+		console.log("before recording animations: ", deepClone(level.movements))
 		recordAnimations(level);
 
         if (playerPositionsAtTurnStart.length>0 && state.metadata.require_player_movement!==undefined && dir >= 0) {
