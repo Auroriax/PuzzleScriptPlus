@@ -1,4 +1,4 @@
-function createSprite(name,spritegrid, colors, padding) {
+function createSprite(name,spritegrid, colors, padding, override_cellwidth, override_cellheight) {
 	if (colors === undefined) {
 		colors = [state.bgcolor, state.fgcolor];
 	}
@@ -6,25 +6,34 @@ function createSprite(name,spritegrid, colors, padding) {
 	var sprite = makeSpriteCanvas(name);
 	var spritectx = sprite.getContext('2d');
 
-    renderSprite(spritectx, spritegrid, colors, padding, 0, 0);
+    if (override_cellheight !== undefined) {
+        sprite.height=override_cellheight
+    }
+    renderSprite(spritectx, spritegrid, colors, padding, 0, 0, override_cellwidth, override_cellheight);
 
     return sprite;
 }
 
-function renderSprite(spritectx, spritegrid, colors, padding, x, y) {
+// render a sprite (spritegrid, colors) to a drawing context (spritectx,padding,x,y)
+// the image will be scaled up based on cellwidth and cellheight
+function renderSprite(spritectx, spritegrid, colors, padding, x, y, override_cellwidth, override_cellheight) {
     if (colors === undefined) {
         colors = ['#00000000', state.fgcolor];
     }
 
-    var offsetX = x * cellwidth;
-    var offsetY = y * cellheight;
+    override_cellheight=override_cellheight || cellheight
+    override_cellwidth=override_cellwidth || cellwidth
 
-    spritectx.clearRect(offsetX, offsetY, cellwidth, cellheight);
+    var offsetX = x * override_cellwidth;
+    var offsetY = y * override_cellheight;
+
+    spritectx.clearRect(offsetX, offsetY, override_cellwidth, override_cellheight);
 
 	var w = spritegrid[0].length;
 	var h = spritegrid.length;
-	var cw = ~~(cellwidth / (w + (padding|0)));
-    var ch = ~~(cellheight / (h + (padding|0)));
+	var cw = ~~(override_cellwidth / (w + (padding|0)));
+    var ch = ~~(override_cellheight / (h + (padding|0)));
+
     var pixh=ch;
     if ("scanline" in state.metadata) {
         pixh=Math.ceil(ch/2);
@@ -120,13 +129,41 @@ function regenSpriteImages() {
             continue;
         }
 
-        if (canOpenEditor) {
-            spriteimages[i] = createSprite(i.toString(),sprites[i].dat, sprites[i].colors);
+        if (sprites[i].dat.length === state.sprite_size) {
+            // normal sprite
+            if (canOpenEditor) {
+                spriteimages[i] = createSprite(i.toString(),sprites[i].dat, sprites[i].colors);
+            }
+            
+            var spriteX = (i % spritesheetSize)|0;
+            var spriteY = (i / spritesheetSize)|0;
+            renderSprite(spritesheetContext, sprites[i].dat, sprites[i].colors, 0, spriteX, spriteY);
+            sprites[i].canvas=spritesheetCanvas
+            sprites[i].sx=spriteX * cellwidth
+            sprites[i].sy=spriteY * cellheight
+            sprites[i].sw=cellwidth
+            sprites[i].sh=cellheight
+            sprites[i].oy=0
+            // console.log("normal",i)
+        } else {
+            // tall sprite
+
+            var name=i.toString()
+            var tallheight = cellheight * sprites[i].dat.length / state.sprite_size
+
+            // the only place the overide params are used:
+            var canv=createSprite(name,sprites[i].dat, sprites[i].colors,0,cellwidth,tallheight);
+            // assert(precanv==canv)
+            spriteimages[i] = canv
+            sprites[i].canvas=canv
+            sprites[i].sx=0
+            sprites[i].sy=0
+            sprites[i].sw=cellwidth
+            sprites[i].sh=tallheight
+            sprites[i].oy=cellheight - canv.height
+            // console.log("tall",name,canv.width,canv.height);
         }
-        
-        var spriteX = (i % spritesheetSize)|0;
-        var spriteY = (i / spritesheetSize)|0;
-        renderSprite(spritesheetContext, sprites[i].dat, sprites[i].colors, 0, spriteX, spriteY);
+        // console.log(" ",sprites[i].sx,sprites[i].sy,sprites[i].sw,sprites[i].sh,sprites[i].oy)
     }
 
     if (canOpenEditor) {
@@ -147,16 +184,12 @@ var editorGlyphMovements=[];
 
 var canvasdict={};
 function makeSpriteCanvas(name) {
-    var canvas;
-    if (name in canvasdict) {
-        canvas = canvasdict[name];
-    } else {
-        canvas = document.createElement('canvas');
-        canvasdict[name]=canvas;
+    if (!(name in canvasdict)) {
+        canvasdict[name]=document.createElement('canvas');
+    	canvasdict[name].width = cellwidth;
+    	canvasdict[name].height = cellheight;
     }
-	canvas.width = cellwidth;
-	canvas.height = cellheight;
-	return canvas;
+    return canvasdict[name];
 }
 
 
@@ -495,16 +528,14 @@ function redraw() {
                     for (var k = 0; k < state.objectCount; k++) {            
                 
                         if (posMask.get(k) != 0) {                  
-                            var spriteX = (k % spritesheetSize)|0;
-                            var spriteY = (k / spritesheetSize)|0;
-
                             var x = xoffset + (i-mini-cameraOffset.x) * cellwidth;
                             var y = yoffset + (j-minj-cameraOffset.y) * cellheight;
                                 
+                            var sprite = sprites[k];
                             ctx.drawImage(
-                                spritesheetCanvas, 
-                                spriteX * cellwidth, spriteY * cellheight, cellwidth, cellheight,
-                                Math.floor(x), Math.floor(y), cellwidth, cellheight);
+                                sprite.canvas,
+                                sprite.sx,sprite.sy,sprite.sw,sprite.sh,
+                                Math.floor(x), Math.floor(y)+sprite.oy, sprite.sw,sprite.sh);
                         }
                     }
                 }
@@ -546,12 +577,6 @@ function redraw() {
                         var posMask = curlevel.getCellInto(posIndex,_o12);                
                     
                         if (posMask.get(k) != 0) {                  
-                            var spriteX = (k % spritesheetSize)|0;
-                            var spriteY = (k / spritesheetSize)|0;
-
-                            
-                        //console.log(posIndex + " " + layerID);
-    
                             var x = xoffset + (i-mini-cameraOffset.x) * cellwidth;
                             var y = yoffset + (j-minj-cameraOffset.y) * cellheight;
     
@@ -567,11 +592,11 @@ function redraw() {
                                     ctx.globalAlpha = 1-tween;
                                 }
                             }
-                            
+                            var sprite = sprites[k];
                             ctx.drawImage(
-                                spritesheetCanvas, 
-                                spriteX * cellwidth, spriteY * cellheight, cellwidth, cellheight,
-                                Math.floor(x), Math.floor(y), cellwidth, cellheight);
+                                sprite.canvas,
+                                sprite.sx,sprite.sy,sprite.sw,sprite.sh,
+                                Math.floor(x), Math.floor(y)+sprite.oy, sprite.sw,sprite.sh);
                             ctx.globalAlpha = 1;
                         }
                     }
@@ -839,13 +864,8 @@ function canvasResize() {
     cellwidth = canvas.width / screenwidth;
     cellheight = canvas.height / screenheight;
 
-    var w = 5;
-    var h = 5;
-
-    if (sprites.length >= 2) {
-        var w = sprites[1].dat.length;
-        var h = sprites[1].dat.length;//sprites[1].dat[0].length;
-    }
+    var w = state.sprite_size || 5;
+    var h = state.sprite_size || 5;
 
     if (textMode) {
         w=5 + 1;
