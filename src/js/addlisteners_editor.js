@@ -56,6 +56,7 @@ window.onbeforeunload = function (e) {
 
     // For IE and Firefox prior to version 4
     if (e) {
+      e.preventDefault();
       e.returnValue = msg;
     }
 

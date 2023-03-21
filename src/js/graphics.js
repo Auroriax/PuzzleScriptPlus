@@ -168,7 +168,7 @@ function generateGlyphImages() {
 	glyphImages=[];
 	
     seenobjects = {};
-	for (var n in state.glyphDict) {
+	for (var n of state.glyphOrder) {
 		if (n.length==1 && state.glyphDict.hasOwnProperty(n)) {            
 			var g=state.glyphDict[n];
 
@@ -265,19 +265,21 @@ function generateGlyphImages() {
         left:4
         right:8
         action:16
-
+        rigid:32
         */
         const coords = [
-            //up
+            //0 up
             [ [3,2],[5,0],[7,2]],
-            //down
+            //1 down
             [ [3,8],[5,10],[7,8]],
-            //left
+            //2 left
             [ [2,3],[0,5],[2,7]],
-            //right
+            //3 right
             [ [7,3],[10,5],[7,7]],
-            //action
+            //4 action
             [ [3,5],[5,7],[7,5],[5,3]],
+            //5 rigid
+            [ [3,3],[5,3],[5,4],[4,4],[4,5],[3,5]],
         ];
 
         for (var i=0;i<coords.length;i++){
@@ -299,10 +301,7 @@ function generateGlyphImages() {
             }
             spritectx.closePath();
             spritectx.fill();
-            spritectx.stroke();          // Render the path
-
-                
-
+            spritectx.stroke();          // Render the path        
         }
 	}
 }
@@ -325,13 +324,7 @@ x = 0;
 y = 0;
 
 function glyphCount(){
-    var count=0;
-    for (var n in state.glyphDict) {
-        if (n.length==1 && state.glyphDict.hasOwnProperty(n)) {
-            count++;
-        }
-    }    
-    return count;
+    return state.glyphOrder.length;
 }
 
 function redraw() {
@@ -383,6 +376,7 @@ function redraw() {
         if (diffToVisualize!==null){
             curlevel = new Level(-1,diffToVisualize.width,diffToVisualize.height,diffToVisualize.layerCount,diffToVisualize.objects);
             curlevel.movements = diffToVisualize.movements;
+            curlevel.rigidMovementAppliedMask = diffToVisualize.rigidMovementAppliedMask;
         }
         ctx.fillStyle = state.bgcolor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -592,6 +586,7 @@ function redraw() {
             var prev_state = debug_visualisation_array[diffToVisualize.turnIndex][prevstate_lineNumberIndex];
             var prevlevel = new Level(-1,prev_state.width,prev_state.height,prev_state.layerCount,prev_state.objects);
             prevlevel.movements = prev_state.movements;
+            prevlevel.rigidMovementAppliedMask = prev_state.rigidMovementAppliedMask;
         
             for (var i = mini; i < maxi; i++) {
                 for (var j = minj; j < maxj; j++) {
@@ -619,6 +614,20 @@ function redraw() {
                             if ((layerMovement&Math.pow(2,k))!==0){
                                 ctx.drawImage(editorGlyphMovements[k], xoffset + (i-mini) * cellwidth, yoffset + (j-minj) * cellheight);
                             }
+                        }
+                    }                             
+                }
+            }
+        
+            //draw rigid applciations!
+            for (var i = mini; i < maxi; i++) {
+                for (var j = minj; j < maxj; j++) {
+                    var posIndex = j + i * curlevel.height;
+                    var rigidbitvec = curlevel.getRigids(posIndex);
+                    for (var layer=0;layer<curlevel.layerCount;layer++) {
+                        var layerRigid = rigidbitvec.getshiftor(0x1f, 5*layer);
+                        if (layerRigid!==0) {
+                            ctx.drawImage(editorGlyphMovements[5], xoffset + (i-mini) * cellwidth, yoffset + (j-minj) * cellheight);                            
                         }
                     }                             
                 }
@@ -849,9 +858,9 @@ function canvasResize() {
 
     if (textMode) {
         w=5 + 1;
-        h=font['X'].length/(w) + 1;
+        var xchar = font['X'].split('\n').map(a=>a.trim());
+        h = xchar.length;        
     }
-
 
     cellwidth =w * Math.max( ~~(cellwidth / w),1);
     cellheight = h * Math.max(~~(cellheight / h),1);

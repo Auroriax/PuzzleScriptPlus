@@ -1,8 +1,8 @@
 var canSetHTMLColors=false;
 var canDump=true;
-var canYoutube=false;
 var recordingStartsFromLevel=0;
 var inputHistory=[];
+var soundHistory=[];
 var compiledText;
 var canOpenEditor=true;
 var IDE=true;
@@ -62,12 +62,15 @@ function dumpTestCase() {
 	consolePrint("<br>Compilation error/warning data (for error message tests - errormessage_testdata.js):<br><br><br><span id=\""+tag+"\" onclick=\"selectText('"+tag+"',event)\">"+resultstring+"</span><br><br><br>",true);
 
 	
+	//if the game is currently running and not on the title screen, dump the recording data
+	if (!titleScreen) {
 	//normal session recording data
 	var levelDat = compiledText;
 	var input = inputHistory.concat([]);
+		var sounds = soundHistory.concat([]);
 	var outputDat = convertLevelToString();
 
-	var resultarray = [levelDat,input,outputDat,recordingStartsFromLevel,loadedLevelSeed];
+		var resultarray = [levelDat,input,outputDat,recordingStartsFromLevel,loadedLevelSeed,sounds];
 	var resultstring = JSON.stringify(resultarray);
 	resultstring = `<br>
 	[<br>
@@ -79,12 +82,14 @@ function dumpTestCase() {
 	var tag = 'selectable'+selectableint;
 	
 	consolePrint("<br>Recorded play session data (for play session tests - testdata.js):<br><br><br><span id=\""+tag+"\" onclick=\"selectText('"+tag+"',event)\">"+resultstring+"</span><br><br><br>",true);
+	}
 
 }
 
 function clearInputHistory() {
 	if (canDump===true) {
 		inputHistory=[];
+		soundHistory=[];
 		recordingStartsFromLevel = curlevel;
 	}
 }
@@ -92,5 +97,11 @@ function clearInputHistory() {
 function pushInput(inp) {
 	if (canDump===true) {
 		inputHistory.push(inp);
+	}
+}
+
+function pushSoundToHistory(seed) {
+	if (canDump===true) {
+		soundHistory.push(seed);
 	}
 }

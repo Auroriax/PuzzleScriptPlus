@@ -18,7 +18,6 @@ lightblue
 Trail
 purple
 
-
 =======
 LEGEND
 =======
@@ -55,7 +54,7 @@ RULES
 WINCONDITIONS
 ==============
 
-No Trail
+no Trail
 
 =======
 LEVELS

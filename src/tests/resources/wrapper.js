@@ -19,9 +19,12 @@ var inputString;
 var outputString;
 
 function consolePrintFromRule(text){}
-function consolePrint(text,urgent,linenumber,turnIndex) {}
+function consolePrint(text,urgent,linenumber,turnIndex) {
+	if (urgent)
+		window.console.log(text);
+}
 function consoleError(text) {
-//	window.console.log(text);
+	window.console.log(text);
 }
 
 function consoleCacheDump() {}
@@ -29,5 +32,4 @@ var editor = {
 	getValue : function () { return levelString }
 }
 
-function addToDebugTimeline(level, lineNumber){}
 function addToDebugTimeline(level, lineNumber){}

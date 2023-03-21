@@ -1012,7 +1012,10 @@ function cacheSeed(seed){
 }
 
 
-function playSound(seed) {
+function playSound(seed,ignore) {
+  if (ignore!==true){
+    pushSoundToHistory(seed);
+  }
   if (muted){
     return;
   }
@@ -1053,7 +1056,6 @@ function toggleMute() {
 
 function muteAudio() {
   muted=1; 
-  tryDeactivateYoutube();
   var mb = document.getElementById("muteButton");
   var umb = document.getElementById("unMuteButton");
   if (mb){
@@ -1063,7 +1065,6 @@ function muteAudio() {
 }
 function unMuteAudio() {
   muted=0; 
-  tryActivateYoutube();
   var mb = document.getElementById("muteButton");
   var umb = document.getElementById("unMuteButton");
   if (mb){

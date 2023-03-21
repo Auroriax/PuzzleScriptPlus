@@ -11,6 +11,7 @@ function makeGIF() {
 	var gifctx = gifcanvas.getContext('2d');
 
 	var inputDat = inputHistory.concat([]);
+	var soundDat = soundHistory.concat([]);
 	
 
 	unitTesting=true;
@@ -71,5 +72,6 @@ function makeGIF() {
   	
   	unitTesting = false;
 
-        inputHistory = inputDat;
+    inputHistory = inputDat;
+	soundHistory = soundDat;
 }

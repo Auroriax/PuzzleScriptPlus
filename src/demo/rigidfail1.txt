@@ -1,8 +1,11 @@
-title Naive bodies
+title BROKEN Naive Extended Bodies
 author increpare
 homepage www.puzzlescript.net
 
-(naive implementation of rigid bodies)
+(
+naive/broken implementation of rigid bodies
+see https://www.puzzlescript.net/Documentation/rigidbodies.html#Introduction
+)
 
 ========
 OBJECTS
@@ -82,6 +85,7 @@ RULES
 
 [ >  Player | BigBlock ] -> [  >  Player | > BigBlock  ]
 [ moving BigBlock | BigBlock ] -> [moving BigBlock|moving BigBlock]
+
 ==============
 WINCONDITIONS
 ==============
