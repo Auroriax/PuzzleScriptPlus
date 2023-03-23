@@ -29,7 +29,7 @@ function generateSpriteMatrix(dat) {
     var result = [];
     for (var i = 0; i < dat.length; i++) {
         var row = [];
-        for (var j = 0; j < dat.length; j++) {
+        for (var j = 0; j < dat[i].length; j++) {
             var ch = dat[i].charAt(j);
             if (ch == '.') {
                 row.push(-1);
@@ -180,14 +180,10 @@ function generateExtraMembers(state) {
                   o.spritematrix[i] = zeros;
               }
           } else {
-              if ( o.spritematrix.length!==state.sprite_size) {
-                  logWarning("Sprite graphics must be " + state.sprite_size + " wide and " + state.sprite_size + " high exactly.",o.lineNumber);
-              } else {
-                  for(var i = 0; i < state.sprite_size; i++) {
-                      if(o.spritematrix[i].length!==state.sprite_size) {
-                          logWarning("Sprite graphics must be " + state.sprite_size + " wide and " + state.sprite_size + " high exactly.",o.lineNumber);
-                          break;
-                      }
+              for(var i = 0; i < state.sprite_size; i++) {
+                  if(o.spritematrix[i].length!==state.sprite_size) {
+                      logWarning("Sprite graphics must be " + state.sprite_size + " wide.",o.lineNumber);
+                      break;
                   }
               }
               o.spritematrix = generateSpriteMatrix(o.spritematrix);

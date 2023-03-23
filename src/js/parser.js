@@ -331,12 +331,7 @@ var codeMirrorFn = function() {
             return nstate;        
         },
         blankLine: function(state) {
-            if (state.section === 'levels') {
-                    if (state.levels[state.levels.length - 1].length > 0)
-                    {
-                        state.levels.push([]);
-                    }
-            }
+            blankLineHandle(state)
         },
         token: function(stream, state) {
            	var mixedCase = stream.string;
@@ -666,14 +661,11 @@ var codeMirrorFn = function() {
 
                                 spritematrix[spritematrix.length - 1] += ch;
                                 if (spritematrix[spritematrix.length-1].length>state.sprite_size){
-                                    logError('Sprites must be ' + state.sprite_size + ' wide and ' + state.sprite_size + ' high.', state.lineNumber);
+                                    logError('Sprites must be ' + state.sprite_size + ' wide.', state.lineNumber);
                                     stream.match(reg_notcommentstart, true);
                                     return null;
                                 }
                                 o.spritematrix = state.objects_spritematrix;
-                                if (spritematrix.length === state.sprite_size && spritematrix[spritematrix.length - 1].length == state.sprite_size) {
-                                    state.objects_section = 0;
-                                }
 
                                 if (ch!=='.') {
                                     var n = parseInt(ch);
