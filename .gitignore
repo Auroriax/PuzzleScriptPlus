@@ -8,3 +8,4 @@ bin/
 
 *.swp
 src - Kopie
+/node_modules/*
